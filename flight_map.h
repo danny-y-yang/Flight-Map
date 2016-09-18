@@ -8,6 +8,15 @@
 struct map_t;
 typedef struct map_t map_t;
 
+// EdgeNodes and CityNodes
+struct LinkedList;
+LinkedList* newLinkedList(city*);
+struct city;
+city* cityCreator(const char*);
+struct edge;
+edge* edgeCreator(const char*);
+
+
 // Creates an empty flight map
 map_t* map_create();
 
