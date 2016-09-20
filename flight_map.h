@@ -9,13 +9,17 @@ struct map_t;
 typedef struct map_t map_t;
 
 // EdgeNodes and CityNodes
-struct LinkedList;
-LinkedList* newLinkedList(city*);
 struct city;
-city* cityCreator(const char*);
+typedef struct city city;
+struct city* cityCreator(const char*);
 struct edge;
-edge* edgeCreator(const char*);
+typedef struct edge edge;
+struct edge* edgeCreator(city*);
+struct stack;
+typedef struct stack stack;
 
+void city_free(city*);
+void edge_free(edge*);
 
 // Creates an empty flight map
 map_t* map_create();

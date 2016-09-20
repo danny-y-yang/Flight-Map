@@ -19,6 +19,7 @@ int main() {
      {
           // create a map
           map_t *map = map_create();
+          printf("map created");
           // check that the number of cities in the map is 0
           assert(num_cities(map) == 0);
           // free the map
