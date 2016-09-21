@@ -5,7 +5,7 @@
 
 #include "flight_map.h"
 
-// A safe version of malloc, that will exit the program in case your allocation
+// A safe version of checked_malloc, that will exit the program in case your allocation
 // fails.
 void *checked_malloc(size_t size) {
      void *ptr = malloc(size);
@@ -18,17 +18,17 @@ void *checked_malloc(size_t size) {
 
 const map_t* mapMemory;
 
-struct city {
+typedef struct {
 	char* cityName;
 	struct city* nextCity;
 	struct edge* edges; 
 	int numEdges;
 	int visited;
-};
+} city;
 
 struct city* cityCreator(const char* name) {
-	struct city* newCity = malloc(sizeof(city));
-	newCity->cityName = malloc(sizeof(char*) * MAX_CITY_LEN);
+	struct city* newCity = checked_malloc(sizeof(city));
+	newCity->cityName = checked_malloc(sizeof(char*) * MAX_CITY_LEN);
 	strcpy(newCity -> cityName, name);
 	newCity->nextCity = NULL;
 	newCity->edges = NULL;
@@ -38,13 +38,13 @@ struct city* cityCreator(const char* name) {
 }
 	
 
-struct edge {
+typedef struct {
 	city* neighbor;
 	edge* nextEdge;
-};
+} edge;
 
 struct edge* edgeCreator(city* newNeighbor) {
-	struct edge* newEdge = malloc(sizeof(edge));
+	struct edge* newEdge = checked_malloc(sizeof(edge));
 	newEdge->neighbor = newNeighbor;
 	newEdge->nextEdge = NULL;
 	return newEdge;
@@ -57,7 +57,7 @@ struct map_t{
 
 map_t* map_create() {
 	/* Initalizes memory needed for a new map */
-    map_t* newMap = malloc(sizeof(map_t));
+    map_t* newMap = checked_malloc(sizeof(map_t));
 	mapMemory = newMap;
 	newMap->head = NULL;
 	newMap->numCities = 0;
@@ -209,8 +209,6 @@ int link_cities(map_t* map, const char* city1_name, const char* city2_name) {
 		}
 	}
 	
-	
-	
 
 	/* Create an edge between city 2 and city 1 */
 	edge* city2Edge = city2->edges;
@@ -314,7 +312,7 @@ const char** linked_cities(map_t* map, const char* city_name) {
 		currCity = currCity->nextCity;
 	}
 
-	const char** neighbors = malloc(sizeof(char*) * neighborsSize + 1);
+	const char** neighbors = checked_malloc(sizeof(char*) * (neighborsSize + 1));
 	edge* currEdge = currCity->edges;
 	
 	for (int i = 0; i < neighborsSize; i++) {
@@ -333,9 +331,9 @@ struct stack {
 };
 
 struct stack* stackCreator(int maxSize) {
-	struct stack* newStack = malloc(sizeof(stack));
+	struct stack* newStack = checked_malloc(sizeof(stack));
 	newStack->size = 0;
-	newStack->stackCities = malloc(sizeof(city*) * maxSize);
+	newStack->stackCities = checked_malloc(sizeof(city*) * maxSize);
 	return newStack;
 };
 
@@ -349,6 +347,11 @@ city* stackPop(stack* myStack) {
 	myStack->stackCities[myStack->size - 1] = NULL;
 	(myStack->size)--;
 	return toReturn;
+}
+
+void stackDestructor(stack* myStack) {
+	free(myStack->stackCities);
+	free(myStack);
 }
 
 int checkVisited(map_t* map, char* name) {
@@ -368,7 +371,8 @@ const char** find_path(map_t* map, const char* src_name, const char* dst_name) {
 		currCity = currCity->nextCity;
 	}
 
-	const char** path = malloc(sizeof(char*) * map->numCities);
+	const char** path = checked_malloc(sizeof(char*) * (map->numCities + 1)) ;
+	path[map->numCities] = NULL;
 	int pathSize = 0;
 	stack* theStack = stackCreator(map->numCities);
 
@@ -388,6 +392,7 @@ const char** find_path(map_t* map, const char* src_name, const char* dst_name) {
 		currCity->visited = 1;
 		path[pathSize] = currCity->cityName;
 		if (strcmp(currCity->cityName, dst_name) == 0) {
+			stackDestructor(theStack);
 			return path;
 		}
 		pathSize++;
