@@ -19,6 +19,7 @@ int main() {
      {
           // create a map
           map_t *map = map_create();
+
           // check that the number of cities in the map is 0
           assert(num_cities(map) == 0);
           // free the map
@@ -52,20 +53,48 @@ int main() {
           const char** result;
           map_t* map = map_create();
           add_city(map, "abc");
+          remove_city(map, "abc");
+          // assert(map->numCities == 0);
+          add_city(map, "abc");
+          // city already exists
+          int failed = add_city(map, "abc");
+          assert(failed == 0);
           add_city(map, "def");
           add_city(map, "ghi");
 
+          // remove city
+          remove_city(map, "ghi");
+          // assert(map->numCities == 2);
+          // remove city that doesn't exist
+          add_city(map, "ghi");
+          assert(remove_city(map, "zzz") == 0);
+          // 
+
           link_cities(map, "abc", "def");
           link_cities(map, "def", "ghi");
+          // cities already linked
+          int failed2 = link_cities(map, "abc", "def");
+          assert(failed2 == 0);
+          // link city that doesn't exist
+          assert(link_cities(map, "abc", "zzz") == 0);
+
+          // unlink a city that doesn't exist
+          assert(unlink_cities(map, "abc", "zzz") == 0);
+          assert(unlink_cities(map, "zzz", "abc") == 0);
 
           // get a list of cities forming a path between "abc" and "ghi"
           result = find_path(map, "abc", "ghi");
           assert(cities_match(
                       result,
                       (const char*[]){"abc", "def", "ghi", NULL}));
+
+          unlink_cities(map, "abc", "def");
+          const char** unlinked = find_path(map, "abc", "ghi");
+          assert(unlinked == NULL);
+          free(unlinked);
           free(result);
           map_free(map);
      }
 
      printf("ALL TESTS PASS!\n");
-}
+     }

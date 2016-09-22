@@ -151,6 +151,9 @@ int add_city(map_t* map, const char* name) {
 			}
 			currCity = currCity->nextCity;
 		}
+		if (strcmp(currCity->cityName, name) == 0) {
+				return 0;
+			}
 		currCity->nextCity = cityCreator(name);
 		(map->numCities)++;
 		return 1; 
@@ -161,19 +164,22 @@ int removeCityHelper(city** cityPtr, const char* name, map_t* map) {
 	
 	/* Iterate through the cities and remove the city, or return 0 if the city doesn't exist */
 	city* currCity = map->head;
-	while (strcmp(currCity->nextCity->cityName, name) != 0) {
-		if (currCity -> nextCity == NULL) {
-			return 0;
+	while (currCity->nextCity != NULL) {
+		
+		if (strcmp(currCity->nextCity->cityName, name) == 0) {
+			city* toRemove = currCity->nextCity;
+			*cityPtr = toRemove->nextCity;
+			(map->numCities)--;
+			free(toRemove->cityName);
+			free(toRemove);
+			return 1;
 		}
 		currCity = currCity -> nextCity;
 		cityPtr = &(currCity->nextCity);
 	}
+	return 0;
 	
-	city* toRemove = currCity->nextCity;
-	*cityPtr = toRemove->nextCity;
-	map->numCities--;
-	free(toRemove);
-	return 1;
+	
 }
 
 int remove_city(map_t* map, const char* name) {
@@ -186,14 +192,16 @@ int remove_city(map_t* map, const char* name) {
 	city* findEdgesToremove = map->head;
 	while (findEdgesToremove != NULL) {
 		unlink_cities(map, findEdgesToremove->cityName, name);
+		findEdgesToremove = findEdgesToremove->nextCity;
 	}
 	
 	/* If there is only 1 city */
 	if (map->head->nextCity == NULL) {
 		if (strcmp(map->head->cityName, name) == 0) {
+			free(map->head->cityName);
+			free(map->head);
 			map->head = NULL;
 			(map->numCities)--;
-			free(map->head);
 			return 1;
 		} else {
 			return 0;
@@ -317,7 +325,7 @@ int unlink_cities(map_t* map, const char* city1_name, const char* city2_name) {
 	}
 
 	/* Either city 1 or city 2 doesn't exist */
-	if (currCity == NULL) {
+	if (city1 == NULL || city2 == NULL) {
 		return 0;
 	} 
 
@@ -327,8 +335,9 @@ int unlink_cities(map_t* map, const char* city1_name, const char* city2_name) {
 	}
 	if (city1->edges->nextEdge == NULL) {
 		if (strcmp(city1->edges->neighbor->cityName, city2_name) == 0) {
-			city1->edges = NULL;
+			
 			free(city1->edges);
+			city1->edges = NULL;
 			(city1->numEdges)--;
 		} 
 		return 0;
@@ -344,8 +353,9 @@ int unlink_cities(map_t* map, const char* city1_name, const char* city2_name) {
 	}
 	if (city2->edges->nextEdge == NULL) {
 		if (strcmp(city2->edges->neighbor->cityName, city1_name) == 0) {
-			city2->edges = NULL;
+			
 			free(city2->edges);
+			city2->edges = NULL;
 			(city2->numEdges)--;
 			return 1;
 		} 
@@ -432,7 +442,8 @@ const char** find_path(map_t* map, const char* src_name, const char* dst_name) {
 		}
 
 	}
-
+	stackDestructor(theStack);
+	free(path);
 	return NULL;
 
 }
