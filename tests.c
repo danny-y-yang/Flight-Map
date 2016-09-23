@@ -61,6 +61,13 @@ int main() {
           assert(failed == 0);
           add_city(map, "def");
           add_city(map, "ghi");
+          
+          remove_city(map, "abc");
+          remove_city(map, "def");
+          remove_city(map, "ghi");
+          add_city(map, "abc");
+          add_city(map, "def");
+          add_city(map, "ghi");
 
           // remove city
           remove_city(map, "ghi");
@@ -83,8 +90,6 @@ int main() {
           assert(unlink_cities(map, "zzz", "abc") == 0);
 
           // get a list of cities forming a path between "abc" and "ghi"
-          const char** doesnotwork = find_path(map, "zzz", "ghi");
-          assert(doesnotwork == NULL);
           result = find_path(map, "abc", "ghi");
           assert(cities_match(
                       result,

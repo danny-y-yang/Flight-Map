@@ -206,9 +206,18 @@ int remove_city(map_t* map, const char* name) {
 		} else {
 			return 0;
 		}
+
+	} else if (strcmp(map->head->cityName, name) == 0) {
+		city* toRemove = map->head;
+		map->head = toRemove->nextCity;
+		free(toRemove->cityName);
+		free(toRemove);
+		(map->numCities)--;
+		return 1;
+	}
 	
 	/* Iterate through the cities, and remove the city if it exists */
-	} else {
+	else {
 		city* currCity = map->head;
 		return removeCityHelper(&(currCity->nextCity), name, map);
 	}
@@ -393,10 +402,13 @@ const char** linked_cities(map_t* map, const char* city_name) {
 
 int checkVisited(map_t* map, char* name) {
 	city* currCity = map->head;
-	while (strcmp(currCity->cityName, name) != 0) {
+	while (currCity != NULL) {
+		if (strcmp(currCity->cityName, name) == 0) {
+			return currCity->visited;
+		}
 		currCity = currCity->nextCity;
 	}
-	return currCity->visited;
+	return 0;
 }
 
 const char** find_path(map_t* map, const char* src_name, const char* dst_name) {
@@ -418,17 +430,12 @@ const char** find_path(map_t* map, const char* src_name, const char* dst_name) {
 	while (startCity != NULL) {
 		if (strcmp(startCity->cityName, src_name) == 0) {
 			break;
-		} else {
-			stackDestructor(theStack);
-			free(path);
-			return NULL;
 		}
+		startCity = startCity->nextCity;
 	}
-
-	// the source city doesn't exist
 	if (startCity == NULL) {
-		stackDestructor(theStack);
 		free(path);
+		stackDestructor;
 		return NULL;
 	}
 
