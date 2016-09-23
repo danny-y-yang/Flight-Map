@@ -419,8 +419,17 @@ const char** find_path(map_t* map, const char* src_name, const char* dst_name) {
 		if (strcmp(startCity->cityName, src_name) == 0) {
 			break;
 		} else {
+			stackDestructor(theStack);
+			free(path);
 			return NULL;
 		}
+	}
+
+	// the source city doesn't exist
+	if (startCity == NULL) {
+		stackDestructor(theStack);
+		free(path);
+		return NULL;
 	}
 
 	stackPush(theStack, startCity);
